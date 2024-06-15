@@ -20,7 +20,7 @@ def healthcheck(db_session: Session = Depends(get_session)):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="Db is down")
 
 @app.get("/todos/", response_model=List[TodoRead])
-def todos(db_session: Session = Depends(get_readonly_session)):
+async def todos(db_session: Session = Depends(get_readonly_session)):
     db_todos = db_session.query(TodoModel).order_by(TodoModel.created_at.desc()).all()
 
     return db_todos
@@ -28,14 +28,14 @@ def todos(db_session: Session = Depends(get_readonly_session)):
 
 
 @app.get("/todos/{id}", response_model=TodoRead)
-def todo_index(db_session: Session = Depends(get_session)):
+async def todo_index(db_session: Session = Depends(get_session)):
     db_todo = db_session.query(TodoModel).filter(TodoModel.id == id).one()
 
     return db_todo
 
 
 @app.post("/todos/")
-def make_todo(todo: TodoCreate, db_session: Session = Depends(get_session)):
+async def make_todo(todo: TodoCreate, db_session: Session = Depends(get_session)):
     db_todo = TodoModel(**todo.dict())
     db_session.add(db_todo)
 
@@ -46,7 +46,7 @@ def make_todo(todo: TodoCreate, db_session: Session = Depends(get_session)):
 
 
 @app.put("/todos/{id}")
-def mark_todo_as_done(id: int, db_session: Session = Depends(get_session)):
+async def mark_todo_as_done(id: int, db_session: Session = Depends(get_session)):
     db_todo = db_session.query(TodoModel).filter(TodoModel.id == id).one()
 
     db_todo.done = True
@@ -60,7 +60,7 @@ def mark_todo_as_done(id: int, db_session: Session = Depends(get_session)):
 
 
 @app.delete("/todos/{id}")
-def delete_todo(id: int, db_session: Session = Depends(get_session)):
+async def delete_todo(id: int, db_session: Session = Depends(get_session)):
 
     db_session.query(TodoModel).filter(TodoModel.id == id).delete()
 
