@@ -1,0 +1,59 @@
+services:
+
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
+    volumes:
+      - .:/todos/:ro
+
+  loaded:
+    depends_on:
+      - api
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --host=http://api:80
+
+  db:
+    image: postgres:12.2-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=todos
+      - POSTGRES_PASSWORD=todos
+      - POSTGRES_DB=todos
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-primary-data:/var/lib/postgresql/data
+      - archive-data:/var/lib/postgresql/archive
+      - ./conf/master.conf:/var/lib/postgresql/data/pgdata/postgresql.conf
+      - ./conf/pg_hba.conf:/var/lib/postgresql/data/pgdata/pg_hba.conf
+  slave:
+    image: postgres:12.2-alpine
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=todos 
+      - POSTGRES_PASSWORD=todos
+      - POSTGRES_DB=todos
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-slave-data:/var/lib/postgresql/data
+      - ./conf/slave.conf:/var/lib/postgresql/data/pgdata/postgresql.conf
+      - ./conf/slave-auto.conf:/var/lib/postgresql/data/pgdata/postgresql.auto.conf
+
+volumes:
+  postgres-primary-data:
+    driver: local
+  postgres-slave-data:
+    driver: local
+  archive-data:
+    driver: local
