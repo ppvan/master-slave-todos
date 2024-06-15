@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.schemas import TodoCreate, TodoRead
-from app.dependencies import get_session
+from app.dependencies import get_session, get_readonly_session
 from sqlalchemy.orm import Session
 from fastapi import Depends, status
 from fastapi.exceptions import HTTPException
@@ -20,7 +20,7 @@ def healthcheck(db_session: Session = Depends(get_session)):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="Db is down")
 
 @app.get("/todos/", response_model=List[TodoRead])
-def todos(db_session: Session = Depends(get_session)):
+def todos(db_session: Session = Depends(get_readonly_session)):
     db_todos = db_session.query(TodoModel).order_by(TodoModel.created_at.desc()).all()
 
     return db_todos
