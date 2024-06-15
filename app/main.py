@@ -6,6 +6,7 @@ from fastapi import Depends, status
 from fastapi.exceptions import HTTPException
 from app.models import TodoModel
 from typing import List
+from fastapi.responses import ORJSONResponse
 
 app = FastAPI()
 
@@ -19,15 +20,20 @@ def healthcheck(db_session: Session = Depends(get_session)):
     except Exception:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, detail="Db is down")
 
-@app.get("/todos/", response_model=List[TodoRead])
+
+@app.get("/todos/", response_model=List[TodoRead], response_class=ORJSONResponse)
 async def todos(db_session: Session = Depends(get_readonly_session)):
-    db_todos = db_session.query(TodoModel).order_by(TodoModel.created_at.desc()).all()
+    db_todos = (
+        db_session.query(TodoModel)
+        .order_by(TodoModel.created_at.desc())
+        .limit(200)
+        .all()
+    )
 
     return db_todos
 
 
-
-@app.get("/todos/{id}", response_model=TodoRead)
+@app.get("/todos/{id}", response_model=TodoRead, response_class=ORJSONResponse)
 async def todo_index(db_session: Session = Depends(get_session)):
     db_todo = db_session.query(TodoModel).filter(TodoModel.id == id).one()
 
@@ -61,7 +67,6 @@ async def mark_todo_as_done(id: int, db_session: Session = Depends(get_session))
 
 @app.delete("/todos/{id}")
 async def delete_todo(id: int, db_session: Session = Depends(get_session)):
-
     db_session.query(TodoModel).filter(TodoModel.id == id).delete()
 
     return "OK"
