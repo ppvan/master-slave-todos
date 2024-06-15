@@ -1,7 +1,0 @@
-pip install -r requirements.txt
-pip install locust==1.6.0
-pip install uvicorn==0.11.5
-pip install fastapi==0.55.1
-pip install pydantic[dotenv]==1.5.1
-pip install pydantic==1.5.1
-pip install fastapi==0.55.1 alembic==1.4.2 sqlalchemy==1.2.1

@@ -10,7 +10,7 @@ services:
     depends_on:
       - db
     volumes:
-      - .:/todos/:ro
+      - .:/todos/
 
   loaded:
     depends_on:
@@ -30,30 +30,26 @@ services:
       - POSTGRES_USER=todos
       - POSTGRES_PASSWORD=todos
       - POSTGRES_DB=todos
-      - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-      - postgres-primary-data:/var/lib/postgresql/data
-      - archive-data:/var/lib/postgresql/archive
-      - ./conf/master.conf:/var/lib/postgresql/data/pgdata/postgresql.conf
-      - ./conf/pg_hba.conf:/var/lib/postgresql/data/pgdata/pg_hba.conf
+      - postgres-primary-data:/var/lib/postgresql
+      - ./conf/setup.sh:/docker-entrypoint-initdb.d/setup.sh
   slave:
     image: postgres:12.2-alpine
     ports:
       - "5434:5432"
+    depends_on:
+      - db
+    restart: always
     environment:
-      - POSTGRES_USER=todos 
+      - POSTGRES_USER=todos
       - POSTGRES_PASSWORD=todos
       - POSTGRES_DB=todos
-      - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-      - postgres-slave-data:/var/lib/postgresql/data
-      - ./conf/slave.conf:/var/lib/postgresql/data/pgdata/postgresql.conf
-      - ./conf/slave-auto.conf:/var/lib/postgresql/data/pgdata/postgresql.auto.conf
+      - ./conf/slave-setup.sh:/docker-entrypoint-initdb.d/slave-setup.sh
+      - postgres-slave-data:/var/lib/postgresql
 
 volumes:
   postgres-primary-data:
     driver: local
   postgres-slave-data:
-    driver: local
-  archive-data:
     driver: local
