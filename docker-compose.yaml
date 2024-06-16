@@ -9,8 +9,17 @@ services:
       - "8000:80"
     depends_on:
       - db
+      - migration
     volumes:
       - .:/todos/
+
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    command: alembic upgrade head
 
   loaded:
     depends_on:
