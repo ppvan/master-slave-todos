@@ -34,7 +34,7 @@ async def todos(db_session: Session = Depends(get_readonly_session)):
 
 
 @app.get("/todos/{id}", response_model=TodoRead, response_class=ORJSONResponse)
-async def todo_index(db_session: Session = Depends(get_session)):
+async def todo_index(id: int, db_session: Session = Depends(get_session)):
     db_todo = db_session.query(TodoModel).filter(TodoModel.id == id).one()
 
     return db_todo

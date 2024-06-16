@@ -12,4 +12,9 @@ class HelloWorldUser(FastHttpUser):
             "description": "Description 22882",
         }
 
-        self.client.post("/todos/", json=payload)
+        res = self.client.post("/todos/", json=payload)
+        todo = res.json()
+        id = todo["id"]
+
+
+        self.client.get(f"/todos/{id}")
